@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi" class="bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ Ghi Điểm Cát Tê</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Small custom styles to complement Tailwind */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .tab-button.active {
+            border-color: #3b82f6; /* border-blue-500 */
+            color: #2563eb; /* text-blue-600 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto max-w-5xl p-4 sm:p-6 lg:p-8">
+        <!-- HEADER -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-800">Công Cụ Ghi Điểm Cát Tê</h1>
+            <p class="text-slate-500 mt-2">Ghi điểm các ván bài một cách chuyên nghiệp và nhanh chóng.</p>
+        </header>
+
+        <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+            <!-- TABS -->
+            <div class="border-b border-slate-200 mb-6">
+                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
+                    <button id="tab-btn-game" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" onclick="showTab('game')">
+                        Nhập Ván Hiện Tại
+                    </button>
+                    <button id="tab-btn-history" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 font-medium text-sm" onclick="showTab('history')">
+                        Lịch Sử Các Ván
+                    </button>
+                </nav>
+            </div>
+
+            <!-- GAME CONTENT TAB -->
+            <div id="tab-content-game" class="tab-content active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-semibold text-slate-700">Ván #<span id="round-counter">1</span></h3>
+                    <button class="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition" onclick="resetGame()">Chơi Lại Từ Đầu</button>
+                </div>
+                
+                <!-- RULES CONFIG -->
+                <div class="section mb-8">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Cài đặt Mức cược</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div><label for="baseBet" class="block text-sm font-medium text-slate-700">Cược gốc (vnđ)</label><input type="number" id="baseBet" value="1000" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></div>
+                        <div><label for="caBet" class="block text-sm font-medium text-slate-700">Cược Cá (vnđ)</label><input type="number" id="caBet" value="1000" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></div>
+                        <div><label for="tuQuyMultiplier" class="block text-sm font-medium text-slate-700">Tứ Quý (x lần cược)</label><input type="number" id="tuQuyMultiplier" value="4" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></div>
+                        <div><label for="dongChatMultiplier" class="block text-sm font-medium text-slate-700">Đồng chất (x lần cược)</label><input type="number" id="dongChatMultiplier" value="3" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></div>
+                        <div><label for="thangCaLangMultiplier" class="block text-sm font-medium text-slate-700">Thắng Cả Làng (x lần cược)</label><input type="number" id="thangCaLangMultiplier" value="2" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></div>
+                    </div>
+                </div>
+                
+                <!-- PLAYER LIST -->
+                <div class="section">
+                    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-4">
+                        <h2 class="text-lg font-semibold text-slate-800">Kết Quả Ván #<span class="round-counter-title">1</span></h2>
+                        <button class="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-blue-500 rounded-lg shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition" onclick="addPlayer()">+ Thêm người chơi</button>
+                    </div>
+                    <div id="player-list" class="overflow-x-auto"></div>
+                    <div class="mt-6 flex justify-end gap-4">
+                        <button id="btn-new-round" class="px-5 py-2.5 text-sm font-semibold text-white bg-slate-500 rounded-lg shadow-sm hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition" onclick="startNewRound()" style="display: none;">Bắt Đầu Ván Mới</button>
+                        <button id="btn-calculate" class="px-5 py-2.5 text-sm font-semibold text-white bg-green-500 rounded-lg shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition" onclick="calculateAndLogRound()">Tính & Chốt Ván</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTORY TAB -->
+            <div id="tab-content-history" class="tab-content">
+                <h2 class="text-xl font-semibold text-slate-800 mb-6 text-center">Lịch Sử Các Ván</h2>
+                <div id="history-log" class="space-y-4">
+                    <p class="text-center text-slate-500">Chưa có ván nào được ghi lại.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let players = []; let historyLog = []; let roundCounter = 1;
+        let winnerId = null; let caWinnerId = null;
+
+        function initializeGame() {
+            players = [
+                { id: 1, name: 'Người chơi 1', thangTrang: 'none', totalGainLoss: 0 },
+                { id: 2, name: 'Người chơi 2', thangTrang: 'none', totalGainLoss: 0 },
+                { id: 3, name: 'Người chơi 3', thangTrang: 'none', totalGainLoss: 0 },
+                { id: 4, name: 'Người chơi 4', thangTrang: 'none', totalGainLoss: 0 },
+            ];
+            historyLog = []; roundCounter = 1;
+            startNewRound(); renderHistory();
+        }
+
+        function renderPlayers() {
+            const playerListDiv = document.getElementById('player-list');
+            let tableHTML = `<div class="w-full text-sm text-left text-slate-500">
+                <div class="text-xs text-slate-700 uppercase bg-slate-50 grid grid-cols-[2.5fr,1fr,1fr,1.5fr,1.5fr,0.5fr] gap-4 px-4 py-3">
+                    <div>Tên (Tổng tiền)</div>
+                    <div class="text-center">Thắng Ván</div>
+                    <div class="text-center">Ăn Cá</div>
+                    <div class="text-center">Thắng Trắng</div>
+                    <div class="text-right">Kết quả ván này</div>
+                    <div></div>
+                </div>`;
+            
+            players.forEach(player => {
+                const roundGainLoss = player.roundGainLoss || 0;
+                const totalColor = player.totalGainLoss > 0 ? 'text-green-600' : player.totalGainLoss < 0 ? 'text-red-600' : 'text-slate-500';
+                const roundColor = roundGainLoss > 0 ? 'text-green-600' : roundGainLoss < 0 ? 'text-red-600' : 'text-slate-700';
+                
+                tableHTML += `
+                    <div class="bg-white border-b border-slate-200 grid grid-cols-[2.5fr,1fr,1fr,1.5fr,1.5fr,0.5fr] gap-4 items-center px-4 py-3">
+                        <div>
+                            <input type="text" value="${player.name}" onchange="updatePlayerName(${player.id}, this.value)" class="w-full p-1 rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            <div class="text-xs mt-1 font-medium ${totalColor}">
+                                Tổng: ${player.totalGainLoss.toLocaleString('vi-VN')}
+                            </div>
+                        </div>
+                        <div class="text-center"><input type="radio" name="winner" value="${player.id}" ${winnerId === player.id ? 'checked' : ''} onchange="selectWinner(${player.id})" class="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"></div>
+                        <div class="text-center"><input type="radio" name="caWinner" value="${player.id}" ${caWinnerId === player.id ? 'checked' : ''} onchange="selectCaWinner(${player.id})" class="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"></div>
+                        <div>
+                            <select onchange="updatePlayerThangTrang(${player.id}, this.value)" class="w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                <option value="none" ${player.thangTrang === 'none' ? 'selected' : ''}>Không</option>
+                                <option value="thangCaLang" ${player.thangTrang === 'thangCaLang' ? 'selected' : ''}>Thắng Cả Làng</option>
+                                <option value="tuQuy" ${player.thangTrang === 'tuQuy' ? 'selected' : ''}>Tứ Quý</option>
+                                <option value="dongChat" ${player.thangTrang === 'dongChat' ? 'selected' : ''}>Đồng chất</option>
+                            </select>
+                        </div>
+                        <div class="text-right font-bold text-lg ${roundColor}">${roundGainLoss > 0 ? '+' : ''}${roundGainLoss.toLocaleString('vi-VN')}</div>
+                        <div class="text-center">
+                            <button class="text-slate-400 hover:text-red-600 transition" onclick="removePlayer(${player.id})">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            playerListDiv.innerHTML = tableHTML + `</div>`;
+        }
+        
+        function calculateAndLogRound() {
+            const rules = {
+                baseBet: parseInt(document.getElementById('baseBet').value) || 0,
+                caBet: parseInt(document.getElementById('caBet').value) || 0,
+                thangTrangMultipliers: {
+                    tuQuy: parseInt(document.getElementById('tuQuyMultiplier').value) || 0,
+                    dongChat: parseInt(document.getElementById('dongChatMultiplier').value) || 0,
+                    thangCaLang: parseInt(document.getElementById('thangCaLangMultiplier').value) || 0
+                }
+            };
+            
+            players.forEach(p => p.roundGainLoss = 0);
+
+            if (caWinnerId !== null && rules.caBet > 0) {
+                const caWinner = players.find(p => p.id === caWinnerId);
+                const caLosers = players.filter(p => p.id !== caWinnerId);
+                caWinner.roundGainLoss += caLosers.length * rules.caBet;
+                caLosers.forEach(loser => loser.roundGainLoss -= rules.caBet);
+            }
+
+            let description = caWinnerId !== null ? `${players.find(p=>p.id===caWinnerId).name} ăn Cá. ` : 'Không ai ăn Cá. ';
+            const thangTrangPlayer = players.find(p => p.thangTrang !== 'none');
+
+            if (thangTrangPlayer) {
+                const multiplier = rules.thangTrangMultipliers[thangTrangPlayer.thangTrang];
+                const winnings = rules.baseBet * multiplier;
+                const losers = players.filter(p => p.id !== thangTrangPlayer.id);
+                losers.forEach(loser => loser.roundGainLoss -= winnings);
+                thangTrangPlayer.roundGainLoss += winnings * losers.length;
+                let winTypeDescription = {"tuQuy": "thắng Tứ Quý!", "dongChat": "thắng Đồng Chất!", "thangCaLang": "thắng Cả Làng!"}[thangTrangPlayer.thangTrang];
+                description += `${thangTrangPlayer.name} ${winTypeDescription}`;
+            } else {
+                const winner = players.find(p => p.id === winnerId);
+                if (!winner) { alert('Vui lòng chọn người Thắng Ván Bài!'); return; }
+                let totalPot = 0;
+                players.forEach(player => {
+                    if (player.id === winner.id) return;
+                    let playerLoss = rules.baseBet;
+                    player.roundGainLoss -= playerLoss;
+                    totalPot += playerLoss;
+                });
+                winner.roundGainLoss += totalPot;
+                description += `${winner.name} thắng ván.`;
+            }
+
+            players.forEach(p => p.totalGainLoss += p.roundGainLoss);
+            
+            historyLog.unshift({
+                roundNumber: roundCounter,
+                description: description,
+                results: players.map(p => ({ name: p.name, gainLoss: p.roundGainLoss }))
+            });
+
+            document.getElementById('btn-calculate').style.display = 'none';
+            document.getElementById('btn-new-round').style.display = 'inline-block';
+            renderPlayers(); renderHistory();
+        }
+
+        function renderHistory() {
+            const historyDiv = document.getElementById('history-log');
+            if (historyLog.length === 0) { historyDiv.innerHTML = '<p class="text-center text-slate-500">Chưa có ván nào được ghi lại.</p>'; return; }
+            historyDiv.innerHTML = '';
+            historyLog.forEach(entry => {
+                let detailsHTML = '';
+                entry.results.forEach(res => {
+                    const gainLoss = res.gainLoss || 0;
+                    const color = gainLoss > 0 ? 'bg-green-100 text-green-800' : gainLoss < 0 ? 'bg-red-100 text-red-800' : 'bg-slate-100 text-slate-800';
+                    detailsHTML += `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color}"><strong>${res.name}:</strong> ${gainLoss > 0 ? '+' : ''}${gainLoss.toLocaleString('vi-VN')}</span>`;
+                });
+                const entryDivHTML = `
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-sm font-semibold text-slate-800">Ván #${entry.roundNumber}</p>
+                            <p class="text-xs text-slate-500">${entry.description}</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">${detailsHTML}</div>
+                    </div>`;
+                historyDiv.innerHTML += entryDivHTML;
+            });
+        }
+        
+        // --- Utility Functions (with bug fix) ---
+        function updatePlayerName(id, name) { players.find(p => p.id === id).name = name; }
+        
+        function updatePlayerThangTrang(id, type) {
+            players.forEach(p => {
+                if (p.id === id) {
+                    p.thangTrang = type;
+                } else {
+                    p.thangTrang = 'none';
+                }
+            });
+            if (type !== 'none') {
+                winnerId = id;
+            } else {
+                if (winnerId === id) {
+                    winnerId = null;
+                }
+            }
+            renderPlayers();
+        }
+        
+        function selectWinner(id) { 
+            winnerId = id;
+            players.forEach(p => {
+                if (p.id !== id) {
+                    p.thangTrang = 'none';
+                }
+            });
+            renderPlayers();
+        }
+        
+        function selectCaWinner(id) { caWinnerId = id; }
+        function addPlayer() {
+            const newId = players.length > 0 ? Math.max(...players.map(p => p.id)) + 1 : 1;
+            players.push({ id: newId, name: `Người chơi ${newId}`, thangTrang: 'none', totalGainLoss: 0, roundGainLoss: 0 });
+            renderPlayers();
+        }
+        function removePlayer(id) {
+            if (!confirm(`Bạn có chắc muốn xoá người chơi này? Toàn bộ tiền và lịch sử của họ sẽ bị mất.`)) return;
+            players = players.filter(p => p.id !== id);
+            if(winnerId === id) winnerId = null;
+            if(caWinnerId === id) caWinnerId = null;
+            renderPlayers(); renderHistory();
+        }
+        function startNewRound() {
+            winnerId = null; caWinnerId = null;
+            players.forEach(p => { p.thangTrang = 'none'; p.roundGainLoss = 0; });
+            roundCounter = historyLog.length + 1;
+            document.getElementById('round-counter').innerText = roundCounter;
+            document.querySelectorAll('.round-counter-title').forEach(el => el.innerText = roundCounter);
+            document.getElementById('btn-calculate').style.display = 'inline-block';
+            document.getElementById('btn-new-round').style.display = 'none';
+            renderPlayers(); showTab('game');
+        }
+        function resetGame() { if (confirm('Bạn có chắc muốn chơi lại từ đầu? Toàn bộ lịch sử và tiền cược sẽ bị xóa.')) { initializeGame(); } }
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => { el.style.display = 'none'; });
+            document.querySelectorAll('.tab-button').forEach(b => {
+                b.classList.remove('active', 'border-blue-500', 'text-blue-600');
+                b.classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+            });
+            const activeTab = document.getElementById(`tab-content-${tabName}`);
+            const activeButton = document.getElementById(`tab-btn-${tabName}`);
+            activeTab.style.display = 'block';
+            activeButton.classList.add('active', 'border-blue-500', 'text-blue-600');
+            activeButton.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700', 'hover:border-slate-300');
+        }
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
